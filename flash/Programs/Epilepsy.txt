@@ -1,0 +1,20 @@
+MOV R0 RT
+SIN R0 R0
+MOV R1 RT
+SET R2 #1
+ADD R1 R2
+XOR R0 R1
+
+
+
+
+
+
+
+
+
+
+
+
+
+OUT R0

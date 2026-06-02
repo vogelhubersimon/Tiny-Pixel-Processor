@@ -7,9 +7,25 @@ You can also include images in this folder and reference them in the markdown. E
 512 kb in size, and the combined size of all images must be less than 1 MB.
 -->
 
+## Table of Contents
+
+- [How it works](#how-it-works)
+  - [Instruction set](#instruction-set)
+  - [Registers](#registers)
+- [How to test](#how-to-test) <- Got here if you just want to try it out
+  - [Code Examples](#code-examples)
+- [External hardware](#external-hardware)
+- [Credits](#credits)
+
 ## How it works
 
 **Tiny Pixel Processor** is a custom processer designed to procedurally generate graphics.
+
+**Specifications:**
+- 640x480 VGA Output
+- 64x48 pixels of Resolution
+- 16-bit custom instruction set
+- 8 registers (4 general purpose, 4 read-only)
 
 ### Instruction set
 
@@ -41,11 +57,10 @@ Immediate = "#" 0 ... 63.
 
 To reconfigure the processor, you can send commands via UART. The following table shows the available commands:
 
+**Writing to the instruction memory**
 
 | Command hex | Command bin | Description |
 |-------------|-------------|-------------|
-| 0x00        | 0000 0000   | CPU Start   |
-| 0x01        | 0000 0001   | CPU Stop    |
 | 0x80        | 1000 0000   | Addr 0      |
 | 0x81        | 1000 0001   | Addr 1      |
 | 0x82        | 1000 0010   | Addr 2      |
@@ -171,6 +186,25 @@ To reprogram the processor, you can send a sequence of 3 bytes via UART.
 | COMP | COMP RS1 RS2 | sets condition register |
 | OUT | OUT RS | Output RS to the VGA |
 
+**ROM Instructions**
+There are also a few special instructions that are used to load bitmap data from a ROM. 
+
+- **FH** (University of Applied Sciences Upper Austria Logo)
+- **TT** (TinyTapeout Logo)
+- **Credits** (Project Credits)
+- **FlagP** (Flag pole)
+
+These Instructions can be called like every other instuction (including conditionals), but they will load the
+corresponding bitmap according to the current pixel coordinates (RX, RY) into the destination register.
+
+**Instruction descriptions**
+| OP | Usecase | Description |
+|----|---------|-------------|
+| FH | FH  RD  | RD = BITMAP[RX][RY] |
+| TT | TT  RD  | RD = BITMAP[RX][RY] |
+| Credits | Credits  RD  | RD = BITMAP[RX][RY] |
+| FlagP | FlagP  RD  | RD = BITMAP[RX][RY] |
+
 ### Registers
 
 **General Purpose Registers**
@@ -185,18 +219,28 @@ The registers can only be read by the instruction, writing to them is not recomm
 
 ## How to test
 
-The default configuration includes a simple program that generates a procedural pattern. So you can plug a VGA monitor into the tiny-vga board and see the output of the processor. 
+The default configuration includes a simple program that generates a procedural pattern. So you can plug a VGA monitor into the tiny-vga board and see the output from the processor. 
 
-If you want to test your own programs, you can parse and upload your assembler code using the provided Python script `flasher.py`. The script takes a text file containing the assembler code, parses it into machine code, and uploads it to the processor via COM port (a USB to UART converter is needed).
+If you want to upload your own programm, you can use the `flash_gui.py` script in the `flasher` folder. This program allows you to parse your assembly code and upload it via COM-port (USB to UART converter is needed) to the processor. 
 
-TODO: flasher usage instructions (flasher still needs to be finished)
+The following python packages are needed to run the script:
+```
+pip install customtkinter serial
+```
 
 ### Code Examples:
 
-TODO: Add code examples for each instruction type, and how to use the condition flags.
+Code examples can be found [here](../flasher/Programs/).
 
 ## External hardware
 
 The [tiny-vga](https://github.com/mole99/tiny-vga) board is used to display the output of the Tiny Pixel Processor on a VGA monitor. 
 
 Also a USB to UART converter is needed to upload the program to the processor. The Chip uses 9600 baud rate, 8 data bits, no parity, and 1 stop bit.
+
+## Credits
+
+This project was created by Patrick Pollak, Julian Schlager, Thomas Lindinger, Simon Vogelhuber and Sebastian Gmeiner. The project 
+
+This project was inspired by [TinyShader](https://github.com/mole99/tt06-tiny-shader) by [mole99](https://github.com/mole99), originally created for the TT06 Shuttle. While TinyShader served as a conceptual starting point, we made deliberate design decisions throughout development - including our own custom processor architecture and instruction set.
+

@@ -1,0 +1,6 @@
+##devMode##
+FH R0
+SET R1 #60
+COMP R1 R0
+ADDLT R0 RT
+ADDLT R0 RX
