@@ -1,3 +1,7 @@
+-- File: VGAPackage.vhd
+-- Contributors: Simon Vogelhuber
+-- Description: Defines VGA timing parameters, synchronization levels, and pixel coordinate types.
+
 library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
@@ -38,6 +42,10 @@ package VGA_Package is
     subtype pixel_x_t is unsigned (natural(ceil(log2(real(VGA_640x480.h_whole_line - 1)))) downto 0);
     subtype pixel_y_t is unsigned (natural(ceil(log2(real(VGA_640x480.v_whole_frame - 1)))) downto 0);
 end package;
+
+-- File: GlobalPackage.vhd
+-- Contributors: Thomas Lindinger, Patrick Pollak, Julian Schlager, Simon Vogelhuber
+-- Description: Defines shared system constants, CPU types, instruction data, and utility functions.
 
 library ieee;
 use ieee.std_logic_1164.all;
@@ -125,14 +133,14 @@ package Global is
     --------- Instruction Memory initial state ----------
     constant cInstrMemInitState : aInstruction_mem := (
         0 => (cOpTTLogo & cReg0 & "000" & ("000") & cAlways),
-        1 => (cOpSet & cReg1 & "000001" & cAlways),
+        1 => (cOpSet & cReg1 & "111111" & cAlways),
         2 => (cOpComp & cReg1 & cReg0 & ("000") & cAlways),
-        3 => (cOpAdd & cReg0 & cRegT & ("000") & cLess),
-        4 => (cOpAdd & cReg0 & cRegX & ("000") & cLess),
-        5 => (cOpAdd & cReg0 & cRegY & ("000") & cLess),
-        6 => (cOpSub & cReg0 & cRegT & ("000") & cGreater),
-        7 => (cOpAdd & cReg0 & cRegX & ("000") & cGreater),
-        8 => (cOpAdd & cReg0 & cRegY & ("000") & cGreater),
+        3 => (cOpAdd & cReg0 & cRegT & ("000") & cEqual),
+        4 => (cOpAdd & cReg0 & cRegX & ("000") & cEqual),
+        5 => (cOpAdd & cReg0 & cRegY & ("000") & cEqual),
+        --6 => (cOpSub & cReg0 & cRegT & ("000") & cGreater),
+        --7 => (cOpAdd & cReg0 & cRegX & ("000") & cGreater),
+        --8 => (cOpAdd & cReg0 & cRegY & ("000") & cGreater),
         19 => (cOpOut & cReg0 & "000000" & cAlways),
         others => (others => '0') 
     );
@@ -213,6 +221,11 @@ Package body Global is
     end function;
 
 end Global;
+
+-- File: BitmapRomFH.vhd
+-- Contributors:
+-- Description: Defines a 64x48 bitmap ROM containing the FH Upper Austria logo.
+
 library ieee;
 use ieee.std_logic_1164.all;
 
@@ -271,6 +284,10 @@ package BitmapRomFH is
 	);
 
 end package BitmapRomFH;
+
+-- File: BitmapRomHSD.vhd
+-- Contributors:
+-- Description: Defines a 64x48 bitmap ROM containing the HSD logo.
 
 library ieee;
 use ieee.std_logic_1164.all;
@@ -331,6 +348,10 @@ package BitmapRomHSD is
 
 end package BitmapRomHSD;
 
+-- File: BitmapRomTT.vhd
+-- Contributors:
+-- Description: Defines a 64x48 bitmap ROM containing the Tiny Tapeout logo.
+
 library ieee;
 use ieee.std_logic_1164.all;
 
@@ -389,6 +410,10 @@ package BitmapRomTT is
 	);
 
 end package BitmapRomTT;
+
+-- File: BitmapRomCredits.vhd
+-- Contributors:
+-- Description: Defines a 64x48 bitmap ROM containing the credits screen.
 
 library ieee;
 use ieee.std_logic_1164.all;
@@ -449,6 +474,11 @@ package BitmapRomCredits is
 
 end package BitmapRomCredits;
 
+-- File: BitmapRomFlagpole.vhd
+-- Contributors:
+-- Description: Defines a 64x48 bitmap ROM containing the flagpole graphic.
+
+
 library ieee;
 use ieee.std_logic_1164.all;
 
@@ -508,6 +538,10 @@ package BitmapRomFlagpole is
 
 end package BitmapRomFlagpole;
 
+-- File: BitmapRomHSD_ESD.vhd
+-- Contributors:
+-- Description: Defines a 64x48 bitmap ROM containing the HSD/ESD logo.
+
 library ieee;
 use ieee.std_logic_1164.all;
 
@@ -566,6 +600,10 @@ package BitmapRomHSD_ESD is
 	);
 
 end package BitmapRomHSD_ESD;
+
+-- File: UartRx-ea.vhd
+-- Contributors: Thomas Lindinger
+-- Description: Receives UART frames, samples the data bits, and outputs each valid data byte.
 
 library ieee;
 use ieee.std_logic_1164.all;
@@ -682,6 +720,11 @@ begin
     oValid <= R.Valid;
 
 end architecture;
+
+-- File: UartInterpreter-ea.vhd
+-- Contributors: Thomas Lindinger
+-- Description: Decodes UART command bytes into instruction-memory writes and time-counter updates.
+
 library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
@@ -811,6 +854,23 @@ begin
     oTimeCounter <= R.TimeCounter;
 
 end architecture;
+
+-- File: PixelProcessorFSMD-ea.vhd
+-- Contributors: Thomas Lindinger, Patrick Pollak, Julian Schlager, Simon Vogelhuber
+-- Components:
+--   UART Receiver: Receives serial data and converts it into bytes.
+--   UART Interpreter: Decodes received commands, instructions, addresses, and timing values.
+--   Instruction Memory: Stores the program and supports instruction updates through UART.
+--   Program Counter: Selects the instruction that is fetched and executed by the CPU.
+--   VGA Timing Generator: Produces pixel coordinates, synchronization pulses, and video blanking.
+--   FSMD State Register: Stores the register file, decoded instruction, flags, and timing state.
+--   Instruction Decoder and ALU: Executes arithmetic, logic, comparison, and output operations.
+--   Time and Random Logic: Generates frame-based time values and pseudo-random register values.
+--   Waveform LUTs: Provide sine, ramp, and sawtooth values for pixel calculations.
+--   Bitmap ROM Logic: Reads stored graphics and converts their pixels into color values.
+-- Description: Executes a programmable pixel-processing instruction sequence for each display
+--              region and converts the results into synchronized VGA color output.
+
 library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
@@ -827,8 +887,8 @@ use work.BitmapRomHSD_ESD.all;
 
 entity PixelCPU is
     port (
-        iClk : in std_ulogic;
-        inRstAsync : in std_ulogic;
+        iClk : in std_ulogic;           -- clk input
+        inRstAsync : in std_ulogic;     -- async reset input, active low
 
         -- Uart Inputs
         iRx : in std_ulogic;
@@ -854,7 +914,10 @@ architecture rtl of PixelCPU is
     signal sUart_Data : aUartData;
     signal sUart_Valid : std_ulogic;
 
+    -- Instruction Memory
     signal sInstrMem : aInstruction_mem;
+    
+    -- VGA Signals
     signal sVGA_Strobe : std_ulogic;
     signal sVGA_HSync : std_ulogic;
     signal sVGA_VSync : std_ulogic;
@@ -865,19 +928,21 @@ architecture rtl of PixelCPU is
     -- Programm Counter:
     signal sCPU_Pc : integer range 0 to cNumInstr - 1;
 
+    -- State Register
     type aStateReg is record
 
-        CPU_YCounter : unsigned(3 downto 0); -- for mod counting in dekapixel logic
+        -- Y Counter for counting how many times we reached the end of a dekapixel line, used for generating the dekapixel y coordinate
+        CPU_YCounter : unsigned(3 downto 0); 
+
         -- Run CPU
-        -- tells the cpu cNumInstr - 1 before the visible area starts that it should start executing instructions, 
+        -- tells the cpu to run cNumInstr - 1 cycles before the visible area starts that it should start executing instructions, 
         -- so that the first instruction is executed when the first pixel is being drawn
         CPU_Run : std_ulogic;
 
-        -- Instruciton Register
-        CPU_SavedInstr : aInstruction;
-
         -- Regfile
         CPU_RegFile : aRegisterFile;
+
+        -- Time related registers
         TIME_Counter : aTimeRegister; -- for counting frames
         TIME_Compare : aTimeRegister; -- for comparing the counter
 
@@ -887,6 +952,10 @@ architecture rtl of PixelCPU is
         -- Color Output
         CPU_ODR : aPixelColor;
 
+        -- Instruciton Register to hold the previously fetched instruction, so that it can be executed in the next cycle while the next instruction is being fetched
+        CPU_SavedInstr : aInstruction;
+        
+        -- Saved decoded instruction fields of the previously fetched insturctions (timing related reasons)
         Instr_Rd, Instr_Rs : aRegFileIdx;
         Instr_Imm : aImmediate;
         Instr_Cond : aCond;
@@ -894,6 +963,7 @@ architecture rtl of PixelCPU is
 
     end record aStateReg;
 
+    -- Initial state of the state register
     constant RInitState : aStateReg := (
         CPU_YCounter => (others => '0'),
         CPU_Run => '0',
@@ -910,6 +980,7 @@ architecture rtl of PixelCPU is
         Instr_Opcode => (others => '0')
     );
 
+    -- signal for the next state logic of the state register
     signal xR, R : aStateReg;
 begin
     -- due to timing related issues caused by the FSMD creating huge fanouts
@@ -1018,6 +1089,7 @@ begin
         end if;
     end process vga;
 
+    -- FSMD Register Process
     reg : process (iClk, inRstAsync) is
     begin
         if inRstAsync = not('1') then
@@ -1027,24 +1099,10 @@ begin
         end if;
     end process reg;
 
+    -- FSMD Combinational Logic
     comb : process (all) is
     begin
         xR <= R;
-
-        -- =================================================================
-        -- RUN_CPU Logic
-        -- -------------
-        -- the cpu should start running cNumInstr - 1 (or 10 pixels) before 
-        -- the visible area starts, so that when the first pixel is being 
-        -- drawn, the first instruction is already executed and theres data 
-        -- in ODR
-        -- =================================================================
-        if sVGA_PixelX >= (VGA_640x480.h_whole_line - 11)
-            or sVGA_PixelX < VGA_640x480.h_visible_area then
-            xR.CPU_Run <= '1';
-        else
-            xR.CPU_Run <= '0';
-        end if;
 
         -- =================================================================
         -- Instruction Execution Logic (hell yeah - the ALU)
@@ -1098,13 +1156,13 @@ begin
                     xR.CPU_RegFile(R.Instr_Rd) <= cRampLUT(to_integer(unsigned(R.CPU_RegFile(R.Instr_Rs)(3 downto 0))) mod 16);
                 when cOpComp =>
                     if unsigned(R.CPU_RegFile(R.Instr_Rd)) = unsigned(R.CPU_RegFile(R.Instr_Rs)) then
-                        xR.CPU_Cond <= cEqual; -- equal
+                        xR.CPU_Cond <= cEqual; 
                     elsif unsigned(R.CPU_RegFile(R.Instr_Rd)) < unsigned(R.CPU_RegFile(R.Instr_Rs)) then
-                        xR.CPU_Cond <= cLess; -- less
+                        xR.CPU_Cond <= cLess;
                     elsif unsigned(R.CPU_RegFile(R.Instr_Rd)) > unsigned(R.CPU_RegFile(R.Instr_Rs)) then
-                        xR.CPU_Cond <= cGreater; -- greater
+                        xR.CPU_Cond <= cGreater;
                     else
-                        xR.CPU_Cond <= cAlways; -- always
+                        xR.CPU_Cond <= cAlways;
                     end if;
                 when cOpFHLogo =>
                         -- Bitmap 64x48 so RX, RY can be used to index into the bitmap rom
@@ -1163,6 +1221,21 @@ begin
         end if;
 
         -- =================================================================
+        -- RUN_CPU Setup Logic
+        -- -------------
+        -- the cpu should start running cNumInstr - 1 (or 10 pixels) before 
+        -- the visible area starts, so that when the first pixel is being 
+        -- drawn, the first instruction is already executed and theres data 
+        -- in ODR. Also the "pipelining stages" need to be taken into account
+        -- =================================================================
+        if sVGA_PixelX > (VGA_640x480.h_whole_line - 12)
+            or sVGA_PixelX < VGA_640x480.h_visible_area then
+            xR.CPU_Run <= '1';
+        else
+            xR.CPU_Run <= '0';
+        end if;
+
+        -- =================================================================
         -- RUN_CPU Logic
         -- --------------
         -- In here the instructions are excecuted based on the current
@@ -1193,7 +1266,8 @@ begin
             -- =============================================================
             if sVGA_PixelX = VGA_640x480.h_whole_line - 20
                 and sVGA_PixelY < VGA_640x480.v_visible_area
-                and sVGA_Strobe = '1' then
+                and sVGA_Strobe = '1' 
+                then
                 -- increment Y counter
                 xR.CPU_YCounter <= R.CPU_YCounter + 1;
 
@@ -1232,7 +1306,9 @@ begin
         -- =================================================================
         -- Rand Register Logic
         -- -------------------
-        -- 
+        -- Here the random register (RegFile(7) == REGR) is generated.
+        -- For that we use a linear feedback shift register, that takes the current value of the register and the value of the Y counter as input, 
+        -- to generate a new random value each time a new Y dekapixel is reached.
         -- =================================================================
 
         if sCPU_Pc = cNumInstr - 1 then
@@ -1243,6 +1319,13 @@ begin
             end if;
         end if;
 
+        -- =================================================================
+        -- Instruction Fetch Logic
+        -- -------------------
+        -- Here the instruction is fetched from the instruction memory based on the current program counter, and saved in a register to be executed in the next cycle. 
+        -- The instruction is also decoded into its fields and saved in registers for timing related reasons.
+        -- =================================================================
+
         xR.CPU_SavedInstr <= sInstrMem(sCPU_Pc);
 
         xR.Instr_Rd <= to_integer(unsigned(R.CPU_SavedInstr(10 downto 8)));
@@ -1252,11 +1335,13 @@ begin
         xR.Instr_Opcode <= R.CPU_SavedInstr(15 downto 11);
     end process comb;
 
+    -- Output Assignments
     oVideoOn <= sVGA_VideoOn;
     oPixelColor <= R.CPU_ODR;
     oVSync <= sVGA_VSync;
     oHSync <= sVGA_HSync;
 
+    -- UartRx and UartInterpreter Instantiation
     UartRx : entity work.UartRx(rtl)
         port map(
             iClk => iClk,
@@ -1280,6 +1365,12 @@ begin
         );
 
 end architecture rtl;
+
+-- File: TinyPixelProcessor-ea.vhd
+-- Contributors:
+-- Description: Wraps the PixelCPU and synchronizes the asynchronous reset and UART input
+--              before forwarding the generated VGA signals and pixel color.
+
 library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
@@ -1352,6 +1443,8 @@ begin
     
     
 end architecture;
+
+-- File: PixelProcessorOnTTSky-e.vhd
 -- this file contains the standard chip interface provided by tinytapout
 -- CHANGE NOTHING!
 
@@ -1373,6 +1466,10 @@ entity tt_um_pixel_processor is
         rst_n  : in  std_ulogic -- reset_n - low to reset
     );
 end entity tt_um_pixel_processor;
+
+-- File: PixelProcessorOnTTSky-a.vhd
+-- Contributors:
+-- Description: Describes the architecture for the Tiny Tapeout Chip.
 
 architecture rtl of tt_um_pixel_processor is
     signal sVGAColor : std_ulogic_vector(5 downto 0);
