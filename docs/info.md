@@ -37,7 +37,7 @@ The assembler language for this processor consists of several instruction types,
 
 ```
 Shader = {Instruction "\n"}.
-Instruction = Type0 | Type1 | Type2 | Type3 | Type4 | Type5 | Type6.
+Instruction = Type0 | Type1 | Type2 | Type3 | Type4 | Type5 | Type6 | Type7.
 
 Type0 = "NOP".
 Type1 = "SET " RDestination Immediate [Condition].
@@ -46,6 +46,7 @@ Type3 = "MOV " RDestination RSource [Condition].
 Type4 = ( "ADD " | "SUB " | "AND " | "NAND " | "OR " | "NOR " | "XOR " | "SIN " | "RAMP " | "SAW " ) RSourceDestination RSource [Condition].
 Type5 = "COMP " RSource RSource [Condition].
 Type6 = "OUT " RSource [Condition].
+Type7 = ( "FH" | "HSD" | "TT" | "Credits" | "FlagP" | "ESE" ) RDestination.
 
 Condition = "EQ" | "LT" | "GT"
 RSource = "R" ( "0" | "1" | "2" | "3" | ( "4" | "X" ) | ( "5" | "Y" ) | ( "6" | "T" ) | ( "7" | "R" ) ).
@@ -217,6 +218,25 @@ Register 0-3 are general purpose registers that can be used for any purpose. The
 Register 4 (**RX**) and 5 (**RY**) contain the current pixel coordinates. Register 6 (**RT**) contains the current time (count of frames divided by a programmable divisor). Register 7 (**RR**) contains a random value for every pixel (every frame is generated the same, so it is useful for generating a noise pattern).
 
 The registers can only be read by the instruction, writing to them is not recommended, as it may cause unexpected behavior.
+
+**Change Time Register count up speed**
+
+The time register contains count of frames divided by a programmable divisor. This divisor can be changed via UART and ranges from 0 to 63. Default is 5.
+
+| Command hex | Command bin | Time Counter |
+|-------------|-------------|--------------|
+| 0x40        | 0100 0000   | 0            |
+| 0x41        | 0100 0001   | 1            |
+| 0x42        | 0100 0010   | 2            |
+| 0x43        | 0100 0011   | 3            |
+| 0x44        | 0100 0100   | 4            |
+| 0x45        | 0100 0101   | 5            |
+| 0x46        | 0100 0110   | 6            |
+| ...         | ...         | ...          |
+| 0x7D        | 0111 1101   | 61           |
+| 0x7E        | 0111 1110   | 62           |
+| 0x7F        | 0111 1111   | 63           |
+
 
 ## How to test
 
