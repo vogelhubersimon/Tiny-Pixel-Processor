@@ -7,22 +7,6 @@ You can also include images in this folder and reference them in the markdown. E
 512 kb in size, and the combined size of all images must be less than 1 MB.
 -->
 
-## Table of Contents
-
-- [Table of Contents](#table-of-contents)
-- [How it works](#how-it-works)
-  - [Instruction set](#instruction-set)
-  - [Registers](#registers)
-- [UART](#uart)
-  - [Writing to the instruction memory](#writing-to-the-instruction-memory)
-  - [Configuring the Time Register Divisor](#configuring-the-time-register-divisor)
-- [How to test](#how-to-test)
-  - [Code Examples](#code-examples)
-- [External hardware](#external-hardware)
-- [Credits](#credits)
-
-**Go to [How to test](#how-to-test) to get started**
-
 ## How it works
 
 **Tiny Pixel Processor** is a custom processer designed to procedurally generate graphics.
