@@ -9,11 +9,12 @@ You can also include images in this folder and reference them in the markdown. E
 
 ## Table of Contents
 
+- [Table of Contents](#table-of-contents)
 - [How it works](#how-it-works)
   - [Instruction set](#instruction-set)
   - [Registers](#registers)
-- [How to test](#how-to-test) <- Got here if you just want to try it out
-  - [Code Examples](#code-examples)
+- [How to test](#how-to-test)
+  - [Code Examples:](#code-examples)
 - [External hardware](#external-hardware)
 - [Credits](#credits)
 
@@ -230,7 +231,7 @@ pip install customtkinter serial
 
 ### Code Examples:
 
-Code examples can be found [here](../flasher/Programs/).
+Code examples can be found [here](../flash/DemoPrograms/).
 
 ## External hardware
 
@@ -240,7 +241,9 @@ Also a USB to UART converter is needed to upload the program to the processor. T
 
 ## Credits
 
-This project was created by Patrick Pollak, Julian Schlager, Thomas Lindinger, Simon Vogelhuber and Sebastian Gmeiner. The project 
+This project was created by Patrick Pollak, Julian Schlager, Thomas Lindinger, Simon Vogelhuber and Sebastian Gmeiner.
+The project was developed as part of a course at the University of Applied Sciences Upper Austria, Campus Hagenberg.
+The course and project were supervised by Prof. DI Dr. Markus Pfaff.
 
 This project was inspired by [TinyShader](https://github.com/mole99/tt06-tiny-shader) by [mole99](https://github.com/mole99), originally created for the TT06 Shuttle. While TinyShader served as a conceptual starting point, we made deliberate design decisions throughout development - including our own custom processor architecture and instruction set.
 

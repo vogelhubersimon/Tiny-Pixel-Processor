@@ -1,0 +1,20 @@
+MOV R0 RX
+ADD R0 RT
+MOV R1 RY
+ADD R1 RT
+XOR R0 R1
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+OUT R0

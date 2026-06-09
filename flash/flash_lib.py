@@ -5,9 +5,9 @@ from pathlib import Path
 from typing import Optional
 
 import serial
-import serial.tools.list_ports
 import platform
 from dataclasses import dataclass
+import serial.tools.list_ports
 
 # Constants
 CMD_PROGRAM   = 0x80
@@ -149,11 +149,8 @@ def translate(line: str, line_no: int = -1) -> int:
         tokens = tokens[:comment_index]
 
     mnemonic_raw = tokens[0]
-    operands_all = tokens[1:]
+    operands = tokens[1:]
     mnemonic, cond = check_conditional(mnemonic_raw)
-
-    # ToDo: add logic for comments
-    operands = operands_all
 
     entry = INSTR_MAP.get(mnemonic)
     if entry is None:

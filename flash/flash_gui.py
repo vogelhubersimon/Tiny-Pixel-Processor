@@ -121,21 +121,19 @@ def run_flash(source_path: str, port: Optional[str],
                 "error"
             )
             done_cb(False); return
+        
+        for slot in range(len(regular),OUT_SLOT):
+            regular.append(("<NOP padding>", NOP_BITS))
+
+        if not devMode:
+            regular.append(("OUT R0", OUT_BITS))
+        else:
+            regular.append(("<NOP padding>", NOP_BITS))
 
         for slot, (src_line, instr_bits) in enumerate(regular):
             msg = f"[{slot:02d}]  {src_line:<24} →  {bin_str(instr_bits)}  0x{instr_bits:04x}"
             log_cb(msg, "instr")
             programmer.send(slot, instr_bits)
-
-        for slot in range(len(regular), OUT_SLOT):
-            msg = f"[{slot:02d}]  <NOP padding>            →  {bin_str(NOP_BITS)}  0x{NOP_BITS:04x}"
-            log_cb(msg, "nop")
-            programmer.send(slot, NOP_BITS)
-
-        if not devMode:
-            msg = f"[{OUT_SLOT:02d}]  OUT R0                   →  {bin_str(OUT_BITS)}  0x{OUT_BITS:04x}"
-            log_cb(msg, "out")
-            programmer.send(OUT_SLOT, OUT_BITS)
 
         log_cb("✓  Flash complete.", "success")
         done_cb(True)
