@@ -10,7 +10,7 @@ from pathlib import Path
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'flash'))
 from flash_lib import translate, INSTR_MAP, MAX_LINES, POS_OPCODE
 
-PROGRAMFOLDER = Path(__file__).resolve().parent.parent / "flash" / "TestPrograms"
+PROGRAMFOLDER = Path(__file__).resolve().parent / "TestPrograms"
 
 BAUD = 9600
 BIT_TIME_NS = int(1e9 / BAUD)
@@ -29,8 +29,6 @@ HEIGHT = 480
 H_BACK_PORCH = 48
 V_BACK_PORCH = 33
 CAPTURE_START_OFFSET = 8
-
-
 
 # sends one uart byte to cpu
 async def send_uart_byte(dut, value):
@@ -210,7 +208,10 @@ async def test_project(dut):
     clock = Clock(dut.iClk, 20, unit="ns")
     cocotb.start_soon(clock.start())
 
-    for filePath in sorted(PROGRAMFOLDER.glob("*.txt")):
+    programs = sorted(PROGRAMFOLDER.glob("*.txt"))
+    assert programs, f"No test programs found in {PROGRAMFOLDER}"
+
+    for filePath in programs:
         dut._log.info(f"Loading program: {filePath.name}")
 
         await ResetDUT(dut)
