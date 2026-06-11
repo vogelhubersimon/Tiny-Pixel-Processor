@@ -33,20 +33,20 @@ CAPTURE_START_OFFSET = 8
 # sends one uart byte to cpu
 async def send_uart_byte(dut, value):
     # idle
-    dut.iRx.value = 1
+    dut.ui_in.value = 1
     await Timer(BIT_TIME_NS, unit="ns")
 
     # start bit
-    dut.iRx.value = 0
+    dut.ui_in.value = 0
     await Timer(BIT_TIME_NS, unit="ns")
 
     # data bits
     for i in range(8):
-        dut.iRx.value = (value >> i) & 1
+        dut.ui_in.value = (value >> i) & 1
         await Timer(BIT_TIME_NS, unit="ns")
 
     # stop bit
-    dut.iRx.value = 1
+    dut.ui_in.value = 1
     await Timer(BIT_TIME_NS, unit="ns")
 
 
@@ -105,15 +105,33 @@ def CheckPPMFiles(filename1, filename2):
 
 # returns current hsync value
 def hsync(dut) -> int:
-    return int(dut.oHsync.value)
+    return (int(dut.uo_out.value) >> 7) & 1
 
 # returns current vsync value
 def vsync(dut) -> int:
-    return int(dut.oVsync.value)
+    return (int(dut.uo_out.value) >> 3) & 1
+
+# Internal map of outputs in vhdl
+# uo_out(0) <= sVGAColor(5);
+# uo_out(1) <= sVGAColor(3);
+# uo_out(2) <= sVGAColor(1);
+# uo_out(3) <= sVSync;
+# uo_out(4) <= sVGAColor(4);
+# uo_out(5) <= sVGAColor(2);
+# uo_out(6) <= sVGAColor(0);
+# uo_out(7) <= sHSync;
 
 # returns the current 6 bit pixel color value
 def pixel6(dut) -> int:
-    return int(dut.oPixelColor.value)
+    v = int(dut.uo_out.value)
+    return (
+        ((v >> 0) & 1) << 5 |
+        ((v >> 4) & 1) << 4 |
+        ((v >> 1) & 1) << 3 |
+        ((v >> 5) & 1) << 2 |
+        ((v >> 2) & 1) << 1 |
+        ((v >> 6) & 1)
+    )
 
 # Converts 6-bit RGB (2 bits per channel) to RGB888
 def pixel6_to_rgb888(pixel_color: int) -> tuple[int, int, int]:
@@ -124,14 +142,14 @@ def pixel6_to_rgb888(pixel_color: int) -> tuple[int, int, int]:
 
 # wait for 2 CLK cycles
 async def wait_pixel_tick(dut):
-    await RisingEdge(dut.iClk)
-    await RisingEdge(dut.iClk)
+    await RisingEdge(dut.clk)
+    await RisingEdge(dut.clk)
 
 # waits until rising edge of hsync
 async def wait_hsync_rising(dut):
     prev = hsync(dut)
     while True:
-        await RisingEdge(dut.iClk)
+        await RisingEdge(dut.clk)
         cur = hsync(dut)
         if prev == 0 and cur == 1:
             return
@@ -141,7 +159,7 @@ async def wait_hsync_rising(dut):
 async def wait_vsync_rising(dut):
     prev = vsync(dut)
     while True:
-        await RisingEdge(dut.iClk)
+        await RisingEdge(dut.clk)
         cur = vsync(dut)
         if prev == 0 and cur == 1:
             return
@@ -195,17 +213,17 @@ def ReadInputFile(dut, sourcePath) -> list[tuple[str, int]]:
 
 async def ResetDUT(dut):
     # Reset
-    dut.iRx.value = 1
-    dut.inRstAsync.value = 0
-    await ClockCycles(dut.iClk, 5)
-    dut.inRstAsync.value = 1
-    await ClockCycles(dut.iClk, 5)
+    dut.ui_in.value = 1
+    dut.rst_n.value = 0
+    await ClockCycles(dut.clk, 5)
+    dut.rst_n.value = 1
+    await ClockCycles(dut.clk, 5)
 
 @cocotb.test()
 async def test_project(dut):
     dut._log.info("Start")
 
-    clock = Clock(dut.iClk, 20, unit="ns")
+    clock = Clock(dut.clk, 20, unit="ns")
     cocotb.start_soon(clock.start())
 
     programs = sorted(PROGRAMFOLDER.glob("*.txt"))
@@ -216,8 +234,7 @@ async def test_project(dut):
 
         await ResetDUT(dut)
         dut._log.info(
-            f"after reset: hsync={hsync(dut)} vsync={vsync(dut)} "
-            f"video_on={int(dut.oVideoOn.value)} pixel={pixel6(dut)}"
+            f"after reset: hsync={hsync(dut)} vsync={vsync(dut)} pixel={pixel6(dut)}"
         )
 
         regular = ReadInputFile(dut, filePath)

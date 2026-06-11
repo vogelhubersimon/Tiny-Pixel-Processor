@@ -1,22 +1,23 @@
 # Makefile
 # See https://docs.cocotb.org/en/stable/quickstart.html for more info
 
-# defaults
-SIM ?= ghdl
-TOPLEVEL_LANG ?= vhdl
 SRC_DIR = $(PWD)/../src
 
 ifneq ($(GATES),yes)
 
 # RTL simulation:
+SIM = ghdl
+TOPLEVEL_LANG = vhdl
 SIM_BUILD = sim_build/rtl
 VHDL_SOURCES += $(SRC_DIR)/tt_um_pixel_processor.vhdl
-TOPLEVEL = tinypixelprocessor
+TOPLEVEL = tt_um_pixel_processor
 EXTRA_ARGS += --std=08
 
 else
 
 # Gate level simulation:
+SIM = icarus
+TOPLEVEL_LANG = verilog
 SIM_BUILD				= sim_build/gl
 COMPILE_ARGS    += -DGL_TEST
 COMPILE_ARGS    += -DFUNCTIONAL
