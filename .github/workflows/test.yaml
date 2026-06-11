@@ -21,7 +21,7 @@ jobs:
 
       - name: Install Python packages
         shell: bash
-        run: pip install -r test/requirements.txt
+        run: pip install -r test/requirements.txt serial
 
       - name: Run tests
         run: |
