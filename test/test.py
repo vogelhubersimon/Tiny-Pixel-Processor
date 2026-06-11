@@ -7,7 +7,7 @@ import os
 from pathlib import Path
 
 # flash_lib.py liegt in diesem Ordner
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), '.'))
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'flash'))
 from flash_lib import translate, INSTR_MAP, MAX_LINES, POS_OPCODE
 
 PROGRAMFOLDER = Path(__file__).resolve().parent.parent / "flash" / "TestPrograms"
