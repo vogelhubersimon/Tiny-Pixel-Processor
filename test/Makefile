@@ -12,6 +12,7 @@ ifneq ($(GATES),yes)
 SIM_BUILD = sim_build/rtl
 VHDL_SOURCES += $(SRC_DIR)/tt_um_pixel_processor.vhdl
 TOPLEVEL = PixelCPU
+COMPILE_ARGS += --std=08
 
 else
 
