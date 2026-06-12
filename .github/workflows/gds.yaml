@@ -34,6 +34,10 @@ jobs:
         with:
           submodules: recursive
 
+      - name: install verilator
+        shell: bash
+        run: sudo apt-get update && sudo apt-get install -y verilator
+
       - name: GL test
         uses: TinyTapeout/tt-gds-action/gl_test@ttgf26a
 
