@@ -132,6 +132,7 @@ Immediate = "#" 0 ... 63.
 
 
 **Instruction descriptions**
+
 | OP  | Usecase     | Description      |
 |-----|-------------|------------------|
 | NOP | NOP         | Does nothing     |

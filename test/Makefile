@@ -2,6 +2,7 @@
 # See https://docs.cocotb.org/en/stable/quickstart.html for more info
 
 SRC_DIR = $(PWD)/../src
+WAVES = 0 # do not dump waveforms, github action will fail
 
 ifneq ($(GATES),yes)
 
@@ -16,7 +17,7 @@ EXTRA_ARGS += --std=08
 else
 
 # Gate level simulation:
-SIM = icarus
+SIM = verilator
 TOPLEVEL_LANG = verilog
 SIM_BUILD				= sim_build/gl
 COMPILE_ARGS    += -DGL_TEST
