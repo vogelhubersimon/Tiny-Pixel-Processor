@@ -229,6 +229,9 @@ async def test_project(dut):
     programs = sorted(PROGRAMFOLDER.glob("*.txt"))
     assert programs, f"No test programs found in {PROGRAMFOLDER}"
 
+    if os.environ.get("GL_TEST_MODE") == "1":
+        programs = programs[:1]
+
     for filePath in programs:
         dut._log.info(f"Loading program: {filePath.name}")
 

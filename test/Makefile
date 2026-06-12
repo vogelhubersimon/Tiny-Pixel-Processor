@@ -17,7 +17,8 @@ EXTRA_ARGS += --std=08
 else
 
 # Gate level simulation:
-SIM = verilator
+export GL_TEST_MODE = 1
+SIM = icarus
 TOPLEVEL_LANG = verilog
 SIM_BUILD				= sim_build/gl
 COMPILE_ARGS    += -DGL_TEST
