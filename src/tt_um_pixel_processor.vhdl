@@ -74,7 +74,7 @@ package Global is
     constant cOpXor     : aOpcode := "01011"; -- Bitwise XOR
     constant cOpOut     : aOpcode := "01100"; -- Output Register to ODR
     constant cOpSin     : aOpcode := "01101"; -- Sine of Time Register to Output Data Register
-    constant cOpRand    : aOpcode := "01110"; -- Output random number to RD
+    --constant cOpRand    : aOpcode := "01110"; -- Output random number to RD
     constant cOpRamp    : aOpcode := "01111"; -- Value from Ramp LUT
     constant cOpSaw     : aOpcode := "10000"; -- Value from Sawtooth LUT
     constant cOpComp    : aOpcode := "10001"; -- Compare two registers and set condition flags
@@ -84,6 +84,14 @@ package Global is
     constant cOpCredits : aOpcode := "10101"; -- Output pixel color based on bitmap ROM and RX, RY coordinates
     constant cOpFlagP   : aOpcode := "10110"; -- Output pixel color based on bitmap ROM and RX, RY coordinates
     constant cOpHSDESD  : aOpcode := "10111"; -- Output pixel color based on bitmap ROM and RX, RY coordinates
+    constant cOpAddImm  : aOpcode := "11000"; -- Add a register and a immediate
+    constant cOpSubImm  : aOpcode := "11001"; -- Sub a register and a immediate
+    constant cOpCompImm : aOpcode := "11010"; -- Compare a register and a immediate and set condition flags
+    constant cOpAndImm  : aOpcode := "11011"; -- Bitwise AND with immediate
+    constant cOpNandImm : aOpcode := "11100"; -- Bitwise NAND with immediate
+    constant cOpOrImm   : aOpcode := "11101"; -- Bitwise OR with immediate
+    constant cOpNorImm  : aOpcode := "11110"; -- Bitwise NOR with immediate
+    constant cOpXorImm  : aOpcode := "11111"; -- Bitwise XOR with immediate
 
     ----------------------------------------- Registers -------------------------------------------
     subtype aInstrRegIdx is std_ulogic_vector(2 downto 0); -- 3 bits to index 8 registers 
@@ -132,6 +140,8 @@ package Global is
     
     --------- Instruction Memory initial state ----------
     constant cInstrMemInitState : aInstruction_mem := (
+
+        -- Tiny Tapeout logo with rainbow background
         0 => (cOpTTLogo & cReg0 & "000" & ("000") & cAlways),
         1 => (cOpSet & cReg1 & "111111" & cAlways),
         2 => (cOpComp & cReg1 & cReg0 & ("000") & cAlways),
@@ -142,6 +152,22 @@ package Global is
         --7 => (cOpAdd & cReg0 & cRegX & ("000") & cGreater),
         --8 => (cOpAdd & cReg0 & cRegY & ("000") & cGreater),
         19 => (cOpOut & cReg0 & "000000" & cAlways),
+
+        -- Austria flag pole with new immediate instructions
+        -- 0 => (cOpFlagP & cReg0 & "000000" & cAlways),
+        -- 1 => (cOpSet & cReg3 & "000000" & cAlways),
+        -- 2 => (cOpCompImm & cReg0 & "101010" & cAlways),
+        -- 3 => (cOpAddImm & cReg3 & "000001" & cEqual),
+        -- 4 => (cOpSet & cReg0 & "110000" & cEqual),
+        -- 5 => (cOpCompImm & cRegY & "010001" & cAlways),
+        -- 6 => (cOpAddImm & cReg3 & "000010" & cLess),
+        -- 7 => (cOpCompImm & cRegY & "011000" & cAlways),
+        -- 8 => (cOpAddImm & cReg3 & "000100" & cLess),
+        -- 9 => (cOpCompImm & cReg3 & "000101" & cAlways),
+        -- 10 => (cOpSet & cReg0 & "111111" & cEqual),
+        -- 11 => (cOpOut & cReg0 & "000000" & cAlways),
+        -- 19 => (cOpOut & cReg0 & "000000" & cAlways),
+
         others => (others => '0') 
     );
     
@@ -223,7 +249,7 @@ Package body Global is
 end Global;
 
 -- File: BitmapRomFH.vhd
--- Contributors:
+-- Contributors: Simon Vogelhuber
 -- Description: Defines a 64x48 bitmap ROM containing the FH Upper Austria logo.
 
 library ieee;
@@ -286,7 +312,7 @@ package BitmapRomFH is
 end package BitmapRomFH;
 
 -- File: BitmapRomHSD.vhd
--- Contributors:
+-- Contributors: Thomas Lindinger
 -- Description: Defines a 64x48 bitmap ROM containing the HSD logo.
 
 library ieee;
@@ -349,7 +375,7 @@ package BitmapRomHSD is
 end package BitmapRomHSD;
 
 -- File: BitmapRomTT.vhd
--- Contributors:
+-- Contributors: Thomas Lindinger
 -- Description: Defines a 64x48 bitmap ROM containing the Tiny Tapeout logo.
 
 library ieee;
@@ -412,7 +438,7 @@ package BitmapRomTT is
 end package BitmapRomTT;
 
 -- File: BitmapRomCredits.vhd
--- Contributors:
+-- Contributors: Thomas Lindinger
 -- Description: Defines a 64x48 bitmap ROM containing the credits screen.
 
 library ieee;
@@ -475,7 +501,7 @@ package BitmapRomCredits is
 end package BitmapRomCredits;
 
 -- File: BitmapRomFlagpole.vhd
--- Contributors:
+-- Contributors: Thomas Lindinger
 -- Description: Defines a 64x48 bitmap ROM containing the flagpole graphic.
 
 
@@ -539,7 +565,7 @@ package BitmapRomFlagpole is
 end package BitmapRomFlagpole;
 
 -- File: BitmapRomHSD_ESD.vhd
--- Contributors:
+-- Contributors: Thomas Lindinger
 -- Description: Defines a 64x48 bitmap ROM containing the HSD/ESD logo.
 
 library ieee;
@@ -1134,6 +1160,32 @@ begin
                     xR.CPU_RegFile(R.Instr_Rd) <= R.CPU_RegFile(R.Instr_Rd) nor R.CPU_RegFile(R.Instr_Rs);
                 when cOpXor =>
                     xR.CPU_RegFile(R.Instr_Rd) <= R.CPU_RegFile(R.Instr_Rd) xor R.CPU_RegFile(R.Instr_Rs);
+
+                when cOpAddImm =>
+                    xR.CPU_RegFile(R.Instr_Rd) <= std_ulogic_vector(unsigned(R.CPU_RegFile(R.Instr_Rd)) + to_integer(unsigned(R.Instr_Imm)));
+                when cOpSubImm =>
+                    xR.CPU_RegFile(R.Instr_Rd) <= std_ulogic_vector(unsigned(R.CPU_RegFile(R.Instr_Rd)) - to_integer(unsigned(R.Instr_Imm)));
+                when cOpCompImm =>
+                    if unsigned(R.CPU_RegFile(R.Instr_Rd)) = unsigned(R.Instr_Imm) then
+                        xR.CPU_Cond <= cEqual; 
+                    elsif unsigned(R.CPU_RegFile(R.Instr_Rd)) < unsigned(R.Instr_Imm) then
+                        xR.CPU_Cond <= cLess;
+                    elsif unsigned(R.CPU_RegFile(R.Instr_Rd)) > unsigned(R.Instr_Imm) then
+                        xR.CPU_Cond <= cGreater;
+                    else
+                        xR.CPU_Cond <= cAlways;
+                    end if;
+                when cOpAndImm =>
+                    xR.CPU_RegFile(R.Instr_Rd) <= R.CPU_RegFile(R.Instr_Rd) and R.Instr_Imm;
+                when cOpNandImm =>
+                    xR.CPU_RegFile(R.Instr_Rd) <= R.CPU_RegFile(R.Instr_Rd) nand R.Instr_Imm;
+                when cOpOrImm =>
+                    xR.CPU_RegFile(R.Instr_Rd) <= R.CPU_RegFile(R.Instr_Rd) or R.Instr_Imm;
+                when cOpNorImm =>
+                    xR.CPU_RegFile(R.Instr_Rd) <= R.CPU_RegFile(R.Instr_Rd) nor R.Instr_Imm;
+                when cOpXorImm =>
+                    xR.CPU_RegFile(R.Instr_Rd) <= R.CPU_RegFile(R.Instr_Rd) xor R.Instr_Imm;
+
                 when cOpOut =>
                     xR.CPU_ODR <= R.CPU_RegFile(R.Instr_Rs);
                 when cOpSin =>
